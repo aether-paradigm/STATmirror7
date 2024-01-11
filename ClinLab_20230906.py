@@ -110,7 +110,7 @@ with st.sidebar:
        """
    )
     
-   @st.cache_data
+   @st.cache_data(experimental_allow_widgets=True)
    def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
        modify = st.checkbox("Do you need to filter your data?")
        st.caption ("Leave unchecked to use whole dataset")
