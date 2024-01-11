@@ -74,10 +74,10 @@ with tab6:
 
 with st.sidebar:
 
-
    st.header('Data Uploader')
    st.write('To use this website, prepare a .csv or .xlsx file according to tutorial.')
 
+   @st.cache_data
    if st.checkbox("Use Example Data", value=True):
     st.write ("Load Completed: Currently working with Example Data")
     
@@ -109,7 +109,8 @@ with st.sidebar:
        """Use this data filter if you're only analysing a subgroup; this filter is applied to all tests in the tabs on the right
        """
    )
-
+    
+   @st.cache_data
    def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
        modify = st.checkbox("Do you need to filter your data?")
        st.caption ("Leave unchecked to use whole dataset")
@@ -196,6 +197,7 @@ with st.sidebar:
    cleandata = filter_dataframe(df)
    st.dataframe(cleandata)
 
+   @st.cache_data
    def convert_df(df):
        # IMPORTANT: Cache the conversion to prevent computation on every rerun
        return df.to_csv().encode('utf-8')
@@ -413,7 +415,7 @@ with tab3:
 
 with tab5:
 
-
+   @st.cache_data
    def pearson_calculate_corr(df):
     dfcols = pd.DataFrame(columns=df.columns)
     correlation_r = dfcols.transpose().join(dfcols, how='outer')
@@ -422,7 +424,8 @@ with tab5:
             tmp = df[df[r].notnull() & df[c].notnull()]
             correlation_r[r][c] = round(pearsonr(tmp[r], tmp[c])[0], 4)
     return correlation_r
-
+       
+   @st.cache_data
    def spearman_calculate_corr(df):
     dfcols = pd.DataFrame(columns=df.columns)
     correlation_r = dfcols.transpose().join(dfcols, how='outer')
@@ -432,6 +435,7 @@ with tab5:
             correlation_r[r][c] = round(spearmanr(tmp[r], tmp[c])[0], 4)
     return correlation_r
 
+   @st.cache_data
    def pearson_calculate_pvalues(df):
     dfcols = pd.DataFrame(columns=df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
@@ -441,6 +445,7 @@ with tab5:
             pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
     return pvalues
 
+   @st.cache_data
    def spearman_calculate_pvalues(df):
     dfcols = pd.DataFrame(columns=df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
