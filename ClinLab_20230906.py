@@ -413,192 +413,6 @@ with tab3:
                     mime="application/octet-stream"
                 )
 
-with tab5:
-
-   @st.cache_data
-   def pearson_calculate_corr(df):
-    dfcols = pd.DataFrame(columns=df.columns)
-    correlation_r = dfcols.transpose().join(dfcols, how='outer')
-    for r in df.columns:
-        for c in df.columns:
-            tmp = df[df[r].notnull() & df[c].notnull()]
-            correlation_r[r][c] = round(pearsonr(tmp[r], tmp[c])[0], 4)
-    return correlation_r
-       
-   @st.cache_data
-   def spearman_calculate_corr(df):
-    dfcols = pd.DataFrame(columns=df.columns)
-    correlation_r = dfcols.transpose().join(dfcols, how='outer')
-    for r in df.columns:
-        for c in df.columns:
-            tmp = df[df[r].notnull() & df[c].notnull()]
-            correlation_r[r][c] = round(spearmanr(tmp[r], tmp[c])[0], 4)
-    return correlation_r
-
-   @st.cache_data
-   def pearson_calculate_pvalues(df):
-    dfcols = pd.DataFrame(columns=df.columns)
-    pvalues = dfcols.transpose().join(dfcols, how='outer')
-    for r in df.columns:
-        for c in df.columns:
-            tmp = df[df[r].notnull() & df[c].notnull()]
-            pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
-    return pvalues
-
-   @st.cache_data
-   def spearman_calculate_pvalues(df):
-    dfcols = pd.DataFrame(columns=df.columns)
-    pvalues = dfcols.transpose().join(dfcols, how='outer')
-    for r in df.columns:
-        for c in df.columns:
-            tmp = df[df[r].notnull() & df[c].notnull()]
-            pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
-    return pvalues
-
-   df = cleandata
-
-   st.header('Part 1: Correlation analysis')
-   st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
-
-
-   corrtype = st.selectbox(
-       'What correlation test do you want to use?',
-       ("pearson", "spearman"))
-
-   if corrtype == 'pearson':
-       st.write("You selected: Pearson's correlation")
-   elif corrtype == 'spearman':
-       st.write("You selected: Spearman's rank correlation")
-
-   ### User selection of variables
-   varlist = df.select_dtypes(include=['float64','int64']).columns
-   filter = st.multiselect(
-               'Select up to 10 variables for pairwise correlation analysis', varlist)
-   if len(filter) >= 11:
-       st.markdown('<p style="color:Red; font-size: 30px;">**CAUTION**: too many variables will significantly slow down computation!</p>', unsafe_allow_html=True)
-   pass
-
-
-   ### Sorting the list of selected variables, then filtering the dataset
-   filter = sorted(filter)
-   df_filter = df.filter(items=filter)
-
-   ### Check for NaN
-   if df_filter.isnull().sum().sum() >= 1:
-       st.markdown('<p style="color:Orange;">**WARNING**: empty cells and/or null values (NaN) detected in dataset!</p>', unsafe_allow_html=True)
-       st.write(df_filter.isnull().sum().sum(), 'invalid cells detected. Samples with invalid cells are removed from analysis.')
-   pass
-
-   ### Removing rows with NaN - to remove drop NA
-   df_filter_droppedna = df_filter.dropna(axis='rows', how= 'all') #
-   st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
-
-   if len(filter) >= 2:
-       if st.checkbox('Start correlation analysis!'):
-           st.write('Dataset after filtering and NaN removal:', df_filter_droppedna)
-
-           st.write('Correlation matrix:')
-           df_corr2 = df_filter_droppedna.corr(method=corrtype)
-           #df_pval = calculate_pvalues(df_filter_droppedna)
-
-           if corrtype == 'pearson':
-            df_corr = pearson_calculate_corr(df_filter_droppedna)
-
-           elif corrtype == 'spearman':
-            df_corr = spearman_calculate_corr(df_filter_droppedna)
-           
-           st.dataframe(df_corr)
-
-
-           mask = np.zeros_like(df_corr2, dtype = float)
-           mask[np.triu_indices_from(mask)] = True
-           with sns.axes_style("white"):
-               fig, ax = plt.subplots(figsize=(10, 7))
-               ax = sns.heatmap(df_corr2, cmap="vlag", mask=mask, center=0, square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .5})
-           st.write(fig)
-
-           st.write('p-values for correlation matrix:')
-
-           if corrtype == 'pearson':
-            df_pval = pearson_calculate_pvalues(df_filter_droppedna)
-
-           elif corrtype == 'spearman':
-            df_pval = spearman_calculate_pvalues(df_filter_droppedna)
-           
-           st.dataframe(df_pval)
-
-       else:
-           st.write('Click to start analysis')
-
-   elif len(filter) <= 1:
-       st.write('Select at least two variables for analysis.')
-
-
-   ############ PAIR PLOTS ##################
-   st.header('Part 2: Pair-plots')
-
-   st.caption ("Pair-plots are scatter plots which help visualise the correlations between selected variables. There are 2 plots displayed for each pair of variables, one of which has a best-fit line. The diagonal for each variable is the histogram showing its distribution.")
-
-   if len(filter) >= 2:
-       if st.checkbox("Optional: enable sorting by categorical variable?", value=False):
-           allvar = df.select_dtypes(include=['category','object','float64','int64']).columns
-           filter2 = st.multiselect(
-               'Select up to 10 variables of interest (include a categorical variable to stratify results if desired):', allvar)
-
-           st.caption('If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.')
-           st.write('  ')
-           ### Sorting the list of selected variables, then filtering the dataset
-           filter2 = sorted(filter2)
-           df_filter2 = df.filter(items=filter2)
-
-           df_filter2_droppedna = df_filter2.dropna(axis='rows', how = 'all')
-           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter2_droppedna.shape[0], 'of', df_filter2.shape[0])
-           st.write('  ')
-           catlist = df_filter2.select_dtypes(include=['category','object']).columns                ## extract list of categorical variables from original df
-           sortby = st.selectbox(                                                           
-                   'Select categorical variable to stratify your data by', catlist)
-
-           filter3 = [f for f in filter2 if f not in catlist]
-
-           st.write('Pair-plot of following variables:', str(filter3))
-           pairplot = sns.pairplot(df_filter2_droppedna, vars = filter3, hue = sortby, dropna = True, diag_kind="kde")
-           pairplot.map_lower(sns.regplot)
-           # Save image of Pairplot before displaying on Streamlit - so it can be saved
-           fn = 'pairplot.eps'
-           plt.savefig(fn,format='eps')
-           st.pyplot(pairplot)
-           
-           with open(fn, "rb") as img:
-                btn = st.download_button(
-                label="Download Pair Plot",
-                data=img,
-                file_name=fn,
-                mime="application/octet-stream"
-                )
-
-       else:
-
-           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
-           pairplot = sns.pairplot(df_filter_droppedna, vars = filter, dropna = True, diag_kind="kde")
-           pairplot.map_lower(sns.regplot)
-           # Save image of Pairplot before displaying on Streamlit - so it can be saved
-           fn = 'pairplot.eps'
-           plt.savefig(fn,format='eps')
-           st.pyplot(pairplot)
-           
-           with open(fn, "rb") as img:
-                btn = st.download_button(
-                label="Download Pair Plot",
-                data=img,
-                file_name=fn,
-                mime="application/octet-stream"
-                )
-
-   elif len(filter) <= 1:
-       st.write('You have not selected enough variables for analysis.')
-
-
-
 with tab4:
      #blank
 
@@ -953,5 +767,193 @@ with tab4:
          st.write(" ")
          
          st.write(f'Odds Ratio: {odds_ratio_result}  \n Confidence Interval (95%):   Low - {low_conf_int_odd}  ; High - {high_conf_int_odd}')
+
+with tab5:
+
+   @st.cache_data
+   def pearson_calculate_corr(df):
+    dfcols = pd.DataFrame(columns=df.columns)
+    correlation_r = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            tmp = df[df[r].notnull() & df[c].notnull()]
+            correlation_r[r][c] = round(pearsonr(tmp[r], tmp[c])[0], 4)
+    return correlation_r
+       
+   @st.cache_data
+   def spearman_calculate_corr(df):
+    dfcols = pd.DataFrame(columns=df.columns)
+    correlation_r = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            tmp = df[df[r].notnull() & df[c].notnull()]
+            correlation_r[r][c] = round(spearmanr(tmp[r], tmp[c])[0], 4)
+    return correlation_r
+
+   @st.cache_data
+   def pearson_calculate_pvalues(df):
+    dfcols = pd.DataFrame(columns=df.columns)
+    pvalues = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            tmp = df[df[r].notnull() & df[c].notnull()]
+            pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
+    return pvalues
+
+   @st.cache_data
+   def spearman_calculate_pvalues(df):
+    dfcols = pd.DataFrame(columns=df.columns)
+    pvalues = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            tmp = df[df[r].notnull() & df[c].notnull()]
+            pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
+    return pvalues
+
+   df = cleandata
+
+   st.header('Part 1: Correlation analysis')
+   st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
+
+
+   corrtype = st.selectbox(
+       'What correlation test do you want to use?',
+       ("pearson", "spearman"))
+
+   if corrtype == 'pearson':
+       st.write("You selected: Pearson's correlation")
+   elif corrtype == 'spearman':
+       st.write("You selected: Spearman's rank correlation")
+
+   ### User selection of variables
+   varlist = df.select_dtypes(include=['float64','int64']).columns
+   filter = st.multiselect(
+               'Select up to 10 variables for pairwise correlation analysis', varlist)
+   if len(filter) >= 11:
+       st.markdown('<p style="color:Red; font-size: 30px;">**CAUTION**: too many variables will significantly slow down computation!</p>', unsafe_allow_html=True)
+   pass
+
+
+   ### Sorting the list of selected variables, then filtering the dataset
+   filter = sorted(filter)
+   df_filter = df.filter(items=filter)
+
+   ### Check for NaN
+   if df_filter.isnull().sum().sum() >= 1:
+       st.markdown('<p style="color:Orange;">**WARNING**: empty cells and/or null values (NaN) detected in dataset!</p>', unsafe_allow_html=True)
+       st.write(df_filter.isnull().sum().sum(), 'invalid cells detected. Samples with invalid cells are removed from analysis.')
+   pass
+
+   ### Removing rows with NaN - to remove drop NA
+   df_filter_droppedna = df_filter.dropna(axis='rows', how= 'all') #
+   st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
+
+   if len(filter) >= 2:
+       if st.checkbox('Start correlation analysis!'):
+           st.write('Dataset after filtering and NaN removal:', df_filter_droppedna)
+
+           st.write('Correlation matrix:')
+           df_corr2 = df_filter_droppedna.corr(method=corrtype)
+           #df_pval = calculate_pvalues(df_filter_droppedna)
+
+           if corrtype == 'pearson':
+            df_corr = pearson_calculate_corr(df_filter_droppedna)
+
+           elif corrtype == 'spearman':
+            df_corr = spearman_calculate_corr(df_filter_droppedna)
+           
+           st.dataframe(df_corr)
+
+
+           mask = np.zeros_like(df_corr2, dtype = float)
+           mask[np.triu_indices_from(mask)] = True
+           with sns.axes_style("white"):
+               fig, ax = plt.subplots(figsize=(10, 7))
+               ax = sns.heatmap(df_corr2, cmap="vlag", mask=mask, center=0, square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .5})
+           st.write(fig)
+
+           st.write('p-values for correlation matrix:')
+
+           if corrtype == 'pearson':
+            df_pval = pearson_calculate_pvalues(df_filter_droppedna)
+
+           elif corrtype == 'spearman':
+            df_pval = spearman_calculate_pvalues(df_filter_droppedna)
+           
+           st.dataframe(df_pval)
+
+       else:
+           st.write('Click to start analysis')
+
+   elif len(filter) <= 1:
+       st.write('Select at least two variables for analysis.')
+
+
+   ############ PAIR PLOTS ##################
+   st.header('Part 2: Pair-plots')
+
+   st.caption ("Pair-plots are scatter plots which help visualise the correlations between selected variables. There are 2 plots displayed for each pair of variables, one of which has a best-fit line. The diagonal for each variable is the histogram showing its distribution.")
+
+   if len(filter) >= 2:
+       if st.checkbox("Optional: enable sorting by categorical variable?", value=False):
+           allvar = df.select_dtypes(include=['category','object','float64','int64']).columns
+           filter2 = st.multiselect(
+               'Select up to 10 variables of interest (include a categorical variable to stratify results if desired):', allvar)
+
+           st.caption('If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.')
+           st.write('  ')
+           ### Sorting the list of selected variables, then filtering the dataset
+           filter2 = sorted(filter2)
+           df_filter2 = df.filter(items=filter2)
+
+           df_filter2_droppedna = df_filter2.dropna(axis='rows', how = 'all')
+           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter2_droppedna.shape[0], 'of', df_filter2.shape[0])
+           st.write('  ')
+           catlist = df_filter2.select_dtypes(include=['category','object']).columns                ## extract list of categorical variables from original df
+           sortby = st.selectbox(                                                           
+                   'Select categorical variable to stratify your data by', catlist)
+
+           filter3 = [f for f in filter2 if f not in catlist]
+
+           st.write('Pair-plot of following variables:', str(filter3))
+           pairplot = sns.pairplot(df_filter2_droppedna, vars = filter3, hue = sortby, dropna = True, diag_kind="kde")
+           pairplot.map_lower(sns.regplot)
+           # Save image of Pairplot before displaying on Streamlit - so it can be saved
+           fn = 'pairplot.eps'
+           plt.savefig(fn,format='eps')
+           st.pyplot(pairplot)
+           
+           with open(fn, "rb") as img:
+                btn = st.download_button(
+                label="Download Pair Plot",
+                data=img,
+                file_name=fn,
+                mime="application/octet-stream"
+                )
+
+       else:
+
+           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
+           pairplot = sns.pairplot(df_filter_droppedna, vars = filter, dropna = True, diag_kind="kde")
+           pairplot.map_lower(sns.regplot)
+           # Save image of Pairplot before displaying on Streamlit - so it can be saved
+           fn = 'pairplot.eps'
+           plt.savefig(fn,format='eps')
+           st.pyplot(pairplot)
+           
+           with open(fn, "rb") as img:
+                btn = st.download_button(
+                label="Download Pair Plot",
+                data=img,
+                file_name=fn,
+                mime="application/octet-stream"
+                )
+
+   elif len(filter) <= 1:
+       st.write('You have not selected enough variables for analysis.')
+
+
+
+
 
 
