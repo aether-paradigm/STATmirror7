@@ -51,7 +51,7 @@ st.markdown("_How quickly do want your analysis results? - **STAT** is the answe
 st.text("  ")
 st.text("  ")
 st.text("  ")
-tab6, tab2, tab3, tab4, tab5 = st.tabs(["Guide","Descriptive and Normality Testing", "Boxplot", "Comparing Groups", "Correlation"])
+tab6, tab2, tab3, tab5, tab4 = st.tabs(["Guide","Descriptive and Normality Testing", "Boxplot", "Correlation", "Comparing Groups"])
 
 with tab6:
     
