@@ -77,7 +77,7 @@ with st.sidebar:
    st.header('Data Uploader')
    st.write('To use this website, prepare a .csv or .xlsx file according to tutorial.')
 
-   @st.cache_data
+   
    if st.checkbox("Use Example Data", value=True):
        st.write ("Load Completed: Currently working with Example Data")
     
