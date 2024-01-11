@@ -79,12 +79,12 @@ with st.sidebar:
 
    @st.cache_data
    if st.checkbox("Use Example Data", value=True):
-    st.write ("Load Completed: Currently working with Example Data")
+       st.write ("Load Completed: Currently working with Example Data")
     
-    df = pd.read_csv('Demo_Dataset_For_Clinlab.csv')
+       df = pd.read_csv('Demo_Dataset_For_Clinlab.csv')
     
-    df['event']= np.random.choice(['Yes','No'], len(df), p=[.7,.3])
-    df['health_status']= np.random.choice(['Healthy','At Risk'], len(df), p=[.6,.4])
+       df['event']= np.random.choice(['Yes','No'], len(df), p=[.7,.3])
+       df['health_status']= np.random.choice(['Healthy','At Risk'], len(df), p=[.6,.4])
 
    
    else: 
