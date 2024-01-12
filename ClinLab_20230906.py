@@ -848,7 +848,7 @@ with tab5:
        pass
 
    ### Removing rows with NaN - to remove drop NA
-       df_filter_droppedna = df_filter.dropna(axis='rows', how= 'all') #
+       df_filter_droppedna = df_filter.dropna(axis='rows', how= 'any') #
        st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
 
        if len(filter) >= 2:
