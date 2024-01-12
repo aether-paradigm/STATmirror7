@@ -815,78 +815,81 @@ with tab5:
    st.header('Part 1: Correlation analysis')
    st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
 
-
-   corrtype = st.selectbox(
+   
+   
+   if st.checkbox("heck this to use Correlation Analysis Tab", value=False):
+       corrtype = st.selectbox(
        'What correlation test do you want to use?',
        ("pearson", "spearman"))
 
-   if corrtype == 'pearson':
-       st.write("You selected: Pearson's correlation")
-   elif corrtype == 'spearman':
-       st.write("You selected: Spearman's rank correlation")
+       if corrtype == 'pearson':
+           st.write("You selected: Pearson's correlation")
+       elif corrtype == 'spearman':
+           st.write("You selected: Spearman's rank correlation")
 
-   ### User selection of variables
-   varlist = df.select_dtypes(include=['float64','int64']).columns
-   filter = st.multiselect(
+       ### User selection of variables
+       varlist = df.select_dtypes(include=['float64','int64']).columns
+       filter = st.multiselect(
                'Select up to 10 variables for pairwise correlation analysis', varlist)
-   if len(filter) >= 11:
-       st.markdown('<p style="color:Red; font-size: 30px;">**CAUTION**: too many variables will significantly slow down computation!</p>', unsafe_allow_html=True)
-   pass
+       if len(filter) >= 11:
+           st.markdown('<p style="color:Red; font-size: 30px;">**CAUTION**: too many variables will significantly slow down computation!</p>', unsafe_allow_html=True)
+       pass
 
 
    ### Sorting the list of selected variables, then filtering the dataset
-   filter = sorted(filter)
-   df_filter = df.filter(items=filter)
+       filter = sorted(filter)
+       df_filter = df.filter(items=filter)
 
    ### Check for NaN
-   if df_filter.isnull().sum().sum() >= 1:
-       st.markdown('<p style="color:Orange;">**WARNING**: empty cells and/or null values (NaN) detected in dataset!</p>', unsafe_allow_html=True)
-       st.write(df_filter.isnull().sum().sum(), 'invalid cells detected. Samples with invalid cells are removed from analysis.')
-   pass
+       if df_filter.isnull().sum().sum() >= 1:
+           st.markdown('<p style="color:Orange;">**WARNING**: empty cells and/or null values (NaN) detected in dataset!</p>', unsafe_allow_html=True)
+           st.write(df_filter.isnull().sum().sum(), 'invalid cells detected. Samples with invalid cells are removed from analysis.')
+       pass
 
    ### Removing rows with NaN - to remove drop NA
-   df_filter_droppedna = df_filter.dropna(axis='rows', how= 'all') #
-   st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
+       df_filter_droppedna = df_filter.dropna(axis='rows', how= 'all') #
+       st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
 
-   if len(filter) >= 2:
-       if st.checkbox('Start correlation analysis!'):
-           st.write('Dataset after filtering and NaN removal:', df_filter_droppedna)
+       if len(filter) >= 2:
+           if st.checkbox('Start correlation analysis!'):
+               st.write('Dataset after filtering and NaN removal:', df_filter_droppedna)
 
-           st.write('Correlation matrix:')
-           df_corr2 = df_filter_droppedna.corr(method=corrtype)
-           #df_pval = calculate_pvalues(df_filter_droppedna)
+               st.write('Correlation matrix:')
+               df_corr2 = df_filter_droppedna.corr(method=corrtype)
+               #df_pval = calculate_pvalues(df_filter_droppedna)
 
-           if corrtype == 'pearson':
-            df_corr = pearson_calculate_corr(df_filter_droppedna)
+               if corrtype == 'pearson':
+                df_corr = pearson_calculate_corr(df_filter_droppedna)
 
-           elif corrtype == 'spearman':
-            df_corr = spearman_calculate_corr(df_filter_droppedna)
+               elif corrtype == 'spearman':
+                df_corr = spearman_calculate_corr(df_filter_droppedna)
            
-           st.dataframe(df_corr)
+               st.dataframe(df_corr)
 
 
-           mask = np.zeros_like(df_corr2, dtype = float)
-           mask[np.triu_indices_from(mask)] = True
-           with sns.axes_style("white"):
-               fig, ax = plt.subplots(figsize=(10, 7))
-               ax = sns.heatmap(df_corr2, cmap="vlag", mask=mask, center=0, square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .5})
-           st.write(fig)
+               mask = np.zeros_like(df_corr2, dtype = float)
+               mask[np.triu_indices_from(mask)] = True
+               with sns.axes_style("white"):
+                   fig, ax = plt.subplots(figsize=(10, 7))
+                   ax = sns.heatmap(df_corr2, cmap="vlag", mask=mask, center=0, square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .5})
+               st.write(fig)
 
-           st.write('p-values for correlation matrix:')
+               st.write('p-values for correlation matrix:')
 
-           if corrtype == 'pearson':
-            df_pval = pearson_calculate_pvalues(df_filter_droppedna)
+               if corrtype == 'pearson':
+                df_pval = pearson_calculate_pvalues(df_filter_droppedna)
 
-           elif corrtype == 'spearman':
-            df_pval = spearman_calculate_pvalues(df_filter_droppedna)
+               elif corrtype == 'spearman':
+                df_pval = spearman_calculate_pvalues(df_filter_droppedna)
            
-           st.dataframe(df_pval)
+               st.dataframe(df_pval)
 
-       else:
-           st.write('Click to start analysis')
+           else:
+               st.write('Click to start analysis')
 
-   elif len(filter) <= 1:
-       st.write('Select at least two variables for analysis.')
+       elif len(filter) <= 1:
+           st.write('Select at least two variables for analysis.')
+   else: st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
 
 
    ############ PAIR PLOTS ##################
