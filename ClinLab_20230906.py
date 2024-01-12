@@ -817,7 +817,7 @@ with tab5:
 
    
    
-   if st.checkbox("heck this to use Correlation Analysis Tab", value=False):
+   if st.checkbox("Check this to use Correlation Analysis Tab", value=False):
        corrtype = st.selectbox(
        'What correlation test do you want to use?',
        ("pearson", "spearman"))
@@ -889,7 +889,8 @@ with tab5:
 
        elif len(filter) <= 1:
            st.write('Select at least two variables for analysis.')
-   else: st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
+   else: 
+       st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
 
 
    ############ PAIR PLOTS ##################
