@@ -810,13 +810,10 @@ with tab5:
     return pvalues
 
    df = cleandata
-   if st.checkbox("Check this to use Correlation Analysis Tab", value=False):
+   if st.checkbox("Leave unchecked if you move to another Tab - as it will slow down analysis significantly.", value=False):
        
        st.header('Part 1: Correlation analysis')
        st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
-
-   
-   
    
        corrtype = st.selectbox(
        'What correlation test do you want to use?',
@@ -956,7 +953,7 @@ with tab5:
            st.write('You have not selected enough variables for analysis.')
 
    else: 
-       st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
+       st.write('Click to start Analysis!')
 
 
 
