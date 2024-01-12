@@ -811,13 +811,14 @@ with tab5:
     return pvalues
 
    df = cleandata
-
-   st.header('Part 1: Correlation analysis')
-   st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
-
-   
-   
    if st.checkbox("Check this to use Correlation Analysis Tab", value=False):
+       
+       st.header('Part 1: Correlation analysis')
+       st.caption("Pearson correlation is only applicable to two variables that are linearly related; otherwise Spearman correlation should be used. In addition, Spearman correlation is recommended for non-parametric data. When in doubt, use Spearman correlation.")
+
+   
+   
+   
        corrtype = st.selectbox(
        'What correlation test do you want to use?',
        ("pearson", "spearman"))
@@ -889,72 +890,74 @@ with tab5:
 
        elif len(filter) <= 1:
            st.write('Select at least two variables for analysis.')
-   else: 
-       st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
+
 
 
    ############ PAIR PLOTS ##################
-   st.header('Part 2: Pair-plots')
+       st.header('Part 2: Pair-plots')
 
-   st.caption ("Pair-plots are scatter plots which help visualise the correlations between selected variables. There are 2 plots displayed for each pair of variables, one of which has a best-fit line. The diagonal for each variable is the histogram showing its distribution.")
+       st.caption ("Pair-plots are scatter plots which help visualise the correlations between selected variables. There are 2 plots displayed for each pair of variables, one of which has a best-fit line. The diagonal for each variable is the histogram showing its distribution.")
 
-   if len(filter) >= 2:
-       if st.checkbox("Optional: enable sorting by categorical variable?", value=False):
-           allvar = df.select_dtypes(include=['category','object','float64','int64']).columns
-           filter2 = st.multiselect(
+       if len(filter) >= 2:
+           if st.checkbox("Optional: enable sorting by categorical variable?", value=False):
+               allvar = df.select_dtypes(include=['category','object','float64','int64']).columns
+               filter2 = st.multiselect(
                'Select up to 10 variables of interest (include a categorical variable to stratify results if desired):', allvar)
 
-           st.caption('If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.')
-           st.write('  ')
-           ### Sorting the list of selected variables, then filtering the dataset
-           filter2 = sorted(filter2)
-           df_filter2 = df.filter(items=filter2)
+               st.caption('If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.')
+               st.write('  ')
+               ### Sorting the list of selected variables, then filtering the dataset
+               filter2 = sorted(filter2)
+               df_filter2 = df.filter(items=filter2)
 
-           df_filter2_droppedna = df_filter2.dropna(axis='rows', how = 'all')
-           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter2_droppedna.shape[0], 'of', df_filter2.shape[0])
-           st.write('  ')
-           catlist = df_filter2.select_dtypes(include=['category','object']).columns                ## extract list of categorical variables from original df
-           sortby = st.selectbox(                                                           
+               df_filter2_droppedna = df_filter2.dropna(axis='rows', how = 'all')
+               st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter2_droppedna.shape[0], 'of', df_filter2.shape[0])
+               st.write('  ')
+               catlist = df_filter2.select_dtypes(include=['category','object']).columns                ## extract list of categorical variables from original df
+               sortby = st.selectbox(                                                           
                    'Select categorical variable to stratify your data by', catlist)
 
-           filter3 = [f for f in filter2 if f not in catlist]
+               filter3 = [f for f in filter2 if f not in catlist]
 
-           st.write('Pair-plot of following variables:', str(filter3))
-           pairplot = sns.pairplot(df_filter2_droppedna, vars = filter3, hue = sortby, dropna = True, diag_kind="kde")
-           pairplot.map_lower(sns.regplot)
-           # Save image of Pairplot before displaying on Streamlit - so it can be saved
-           fn = 'pairplot.eps'
-           plt.savefig(fn,format='eps')
-           st.pyplot(pairplot)
+               st.write('Pair-plot of following variables:', str(filter3))
+               pairplot = sns.pairplot(df_filter2_droppedna, vars = filter3, hue = sortby, dropna = True, diag_kind="kde")
+               pairplot.map_lower(sns.regplot)
+               # Save image of Pairplot before displaying on Streamlit - so it can be saved
+               fn = 'pairplot.eps'
+               plt.savefig(fn,format='eps')
+               st.pyplot(pairplot)
            
-           with open(fn, "rb") as img:
-                btn = st.download_button(
-                label="Download Pair Plot",
-                data=img,
-                file_name=fn,
-                mime="application/octet-stream"
-                )
+               with open(fn, "rb") as img:
+                    btn = st.download_button(
+                    label="Download Pair Plot",
+                    data=img,
+                    file_name=fn,
+                    mime="application/octet-stream"
+                    )
 
-       else:
+           else:
 
-           st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
-           pairplot = sns.pairplot(df_filter_droppedna, vars = filter, dropna = True, diag_kind="kde")
-           pairplot.map_lower(sns.regplot)
-           # Save image of Pairplot before displaying on Streamlit - so it can be saved
-           fn = 'pairplot.eps'
-           plt.savefig(fn,format='eps')
-           st.pyplot(pairplot)
+               st.write('NAs are automatically removed here. Number of datapoints retained after removing NAs:', df_filter_droppedna.shape[0], 'of', df_filter.shape[0])
+               pairplot = sns.pairplot(df_filter_droppedna, vars = filter, dropna = True, diag_kind="kde")
+               pairplot.map_lower(sns.regplot)
+               # Save image of Pairplot before displaying on Streamlit - so it can be saved
+               fn = 'pairplot.eps'
+               plt.savefig(fn,format='eps')
+               st.pyplot(pairplot)
            
-           with open(fn, "rb") as img:
-                btn = st.download_button(
-                label="Download Pair Plot",
-                data=img,
-                file_name=fn,
-                mime="application/octet-stream"
-                )
+               with open(fn, "rb") as img:
+                    btn = st.download_button(
+                    label="Download Pair Plot",
+                    data=img,
+                    file_name=fn,
+                    mime="application/octet-stream"
+                    )
 
-   elif len(filter) <= 1:
-       st.write('You have not selected enough variables for analysis.')
+       elif len(filter) <= 1:
+           st.write('You have not selected enough variables for analysis.')
+
+   else: 
+       st.write('Leave unchecked if you move to another Tab - as it will slow down analysis significantly.')
 
 
 
