@@ -571,8 +571,7 @@ with tab4:
                     pnorm_kw = round(pnorm_kw,5)
 
                 st.write(f'Mann Whitney p value: {pnorm_kw}')
-                st.caption('If p-value < 0.05, please filter the grouping variable (using Filter Dataframe on the left) to TWO groups to conduct a set of pairwise comparisons to determine which groups are significantly different from the other. ')
-                st.caption(f'NOTICE: As <{selected_var1}> have less than two groupings when grouped by <{selected_categorical_var1}>, Mann Whitney U Test is done instead of Kruskal-Wallis H-test. ')
+                st.caption(f':red[NOTICE:] As <{selected_var1}> have less than two groupings when grouped by <{selected_categorical_var1}>, Mann Whitney U Test is done instead of Kruskal-Wallis H-test. ')
          else:
             st.write(f'NULL: Selected variable <{selected_var1}> have less than two groupings when grouped by <{selected_categorical_var1}>.')
             #st.write('test4')
@@ -904,7 +903,7 @@ with tab5:
                filter2 = st.multiselect(
                'Select up to 10 variables of interest (include a categorical variable to stratify results if desired):', allvar)
 
-               st.caption('If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.')
+               st.caption(':red[If an Error shows up, please ensure that you select a categorical variable TOGETHER with the variables selected in your correlation.]')
                st.write('  ')
                ### Sorting the list of selected variables, then filtering the dataset
                filter2 = sorted(filter2)
